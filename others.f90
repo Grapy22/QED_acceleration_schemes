@@ -1,6 +1,8 @@
 module others
     use quantum_state
     implicit none
+    integer(8), save :: start_time = 0
+    integer(8), save :: rate = 0
     
 contains
 
@@ -141,5 +143,50 @@ subroutine Symb(state)
 
 end subroutine Symb
 
+    subroutine timer(mode)
+    implicit none
+    character(len=*), intent(in) :: mode
+    integer :: finish, minutes, seconds
+    real :: elapsed
+
+    if (mode == "start") then
+      call system_clock(start_time, rate)
+
+    else if (mode == "stop") then
+      call system_clock(finish)
+
+      elapsed = real(finish - start_time) / real(rate)
+      minutes = int(elapsed / 60.0)
+      seconds = int(elapsed - minutes * 60)
+
+      write(*,'(A, I0, A, I0, A)') "Execution time: ", minutes, " min ", seconds, " sec"
+    end if
+    end subroutine timer  
     
+
+    subroutine show_status(step_name, pulse)
+        character(len=*), intent(in) :: step_name
+        integer, intent(in), optional :: pulse ! Опционально для анимации точек
+        character(len=4) :: dots
+        integer :: i, num_dots
+        
+        dots = "    "
+        if (present(pulse)) then
+            ! Цикл анимации: . -> .. -> ... -> ....
+            num_dots = mod(pulse - 1, 4) + 1
+            do i = 1, num_dots
+                dots(i:i) = "."
+            end do
+        else
+            ! Если pulse нет, просто ставим три точки
+            dots = "... "
+        end if
+
+        ! Используем \r (char(13)) для возврата каретки и перезаписи строки
+        ! Добавляем пробелы в конце для затирки хвоста предыдущей строки
+        write(*, '(A, A, A, A, A)', advance='no') &
+            char(13), "[WORKING] ", step_name, dots, "    "
+        
+        call flush(6) 
+    end subroutine show_status
 end module others

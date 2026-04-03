@@ -262,4 +262,66 @@ contains
 
     end function Y25
 
+
+    real(pr) function P_l ( l, x )
+!- - - - - - - - -
+      implicit none
+! .. Input / Output ..
+      integer, intent(in) :: l
+      real(pr), intent(in) :: x
+!- - - - - - - - -
+
+        if     ( l == 0 ) then
+
+          P_l = 1._pr
+
+        elseif ( l == 1 ) then
+
+          P_l = x
+
+        elseif ( l == 2 ) then
+
+          P_l = ( 3._pr * x**2._pr - 1._pr ) / 2._pr
+
+        elseif ( l == 3 ) then
+
+          P_l = ( 5._pr * x**3._pr - 3._pr * x ) / 2._pr
+
+        elseif ( l == 4 ) then
+
+          P_l = ( 35._pr*x**4._pr - 30._pr*x**2._pr + 3._pr ) / 8._pr
+
+        elseif ( l == 5 ) then
+
+          P_l = ( 63._pr*x**5._pr - 70._pr*x**3._pr + 15._pr*x ) / 8._pr
+
+        elseif ( l == 6 ) then
+
+          P_l = ( 231._pr*x**6._pr - 315._pr*x**4._pr + 105._pr*x**2._pr - 5._pr ) / 16._pr
+
+        elseif ( l == 7 ) then
+
+          P_l = ( 429._pr*x**7._pr - 693._pr*x**5._pr + 315._pr*x**3._pr - 35._pr*x ) / 16._pr
+
+        elseif ( l == 8 ) then
+
+          P_l = ( 6435._pr*x**8._pr - 12012._pr*x**6._pr + 6930._pr*x**4._pr - 1260._pr*x**2._pr + 35._pr ) / 128._pr
+
+        elseif ( l == 9 ) then
+
+          P_l = ( 12155._pr*x**9._pr - 25740._pr*x**7._pr + 18018._pr*x**5._pr - 4620._pr*x**3._pr + 315._pr*x ) / 128._pr
+
+        else
+
+          write(*,'(1x,a18)') 'P_l : l is too big'
+          P_l = 0._pr
+
+          stop
+
+        endif
+
+       return
+
+    end function P_l
+
 End module angINT
