@@ -5,6 +5,7 @@ module pot0_2004
     use angint
     use Integration_Cuba
     use others
+    
     implicit none
 
     
@@ -63,9 +64,10 @@ contains
     end function red_0pot
 !=====================================================================
 
-    subroutine pot0 (state , vr , vert , red)
+    subroutine pot0 (state , unit_no ,vr , vert , red)
         type(q_state) , intent(in) :: state
         character(len=*), intent(in), optional :: vr , red , vert
+        integer, intent(in) :: unit_no
         real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2 
         real(pr) :: res3 , err3 , epsabs3 , fctr3 , g_D , total_res , total_err
         real(pr) ::  epsabs1_phys , epsabs2_phys ,epsabs3_phys
@@ -74,7 +76,7 @@ contains
         flag_red = present(red) .and. red == "red"
         flag_vr = present(vr) .and. vr == "vr"
 
-        call Symb(state)
+        !call Symb(state, unit_no)
 
         associate( j => state%j, k => state%k, en => state%en)
         g_D = k / (j*(j+1._pr)) * (en * k - 0.5_pr)
@@ -107,7 +109,7 @@ contains
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
         
-        call print_result("pot0_vertex", total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vertex", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -119,7 +121,7 @@ contains
         err3 = err3 * fctr3
 
 
-        call print_result("pot0_red", res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot0_red", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -128,10 +130,10 @@ contains
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot0_vr", total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vr", unit_no, total_res, total_err, epsabs1_phys, 1e6_pr)
          
     endif     
-    
+    !write(*,*) repeat("-" , 78)
     end subroutine pot0
     
 !=====================================================================
@@ -189,8 +191,9 @@ contains
     end function red_0pot_SC
 
 
-    subroutine pot0_SC (state , vr , vert , red)
+    subroutine pot0_SC (state , unit_no ,vr , vert , red)
         type(q_state) , intent(in) :: state
+        integer, intent(in) :: unit_no
         character(len=*), intent(in), optional :: vr , red , vert
         real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2 
         real(pr) :: res3 , err3 , epsabs3 , fctr3 , g_D , total_res , total_err
@@ -200,7 +203,7 @@ contains
         flag_red = present(red) .and. red == "red"
         flag_vr = present(vr) .and. vr == "vr"
 
-        call Symb(state)
+        !call Symb(state, unit_no)
 
         associate( j => state%j, k => state%k, en => state%en , alphaZ => state%alphaZ)
         g_D = k / (j*(j+1._pr)) * (en * k - 0.5_pr)
@@ -220,7 +223,6 @@ contains
 
 
     if (flag_vert) then
-
         call Cuba_Int1_Cuhre(ver1_0pot_SC, state, res1, err1, epsrel, epsabs1)
         call Cuba_Int1_Cuhre(ver2_0pot_SC, state, res2, err2, epsrel, epsabs2)
 
@@ -233,7 +235,7 @@ contains
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
         
-        call print_result("pot0_vertex_SC", total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vertex_SC", unit_no,total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -245,7 +247,7 @@ contains
         err3 = err3 * fctr3
 
 
-        call print_result("pot0_red_SC", res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot0_red_SC", unit_no,res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -254,9 +256,9 @@ contains
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot0_vr_SC", total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vr_SC", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
          
     endif     
-    
+   ! write(*,*) repeat("-" , 78)
     end subroutine pot0_SC
 end module pot0_2004

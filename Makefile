@@ -1,43 +1,57 @@
 FC = gfortran
-FFLAGS = -Wall -O3 -march=native -funroll-loops -ftree-vectorize
+FFLAGS = -Wall -O3 -march=native -funroll-loops -ftree-vectorize -fopenmp -I.
 CUBA_DIR = /home/dmitry/Cuba-4.2.2
 LIBS = -L$(CUBA_DIR) -lcubaq -lm
 
-# Явно перечисляем ВСЕ исходные файлы
-SOURCES = $(wildcard *.f90 *.f)
-
-# Создаем список объектных файлов
-OBJECTS = $(SOURCES:.f90=.o)
-OBJECTS := $(OBJECTS:.f=.o)
+# 1. СПИСОК ОБЪЕКТОВ (Только один раз, без wildcard)
+OBJECTS = parameters.o ang.o angINT.o coeff_2004.o dirac_pnt.o \
+          GAMMA_MOD.o Integration_Cuba.o others.o pot0_2004.o \
+          pot1_2004.o prep_to_1pot.o quadpack_generic.o \
+          quantum_state.o spec_func.o main.o
 
 TARGET = main
 
-# Цель по умолчанию зависит от объектных файлов
 all: $(TARGET)
 
-# Сборка программы из объектных файлов
+# 2. СБОРКА (Добавлен FFLAGS для OpenMP)
 $(TARGET): $(OBJECTS)
-	$(FC) $(OBJECTS) -o $(TARGET) $(LIBS)
+	$(FC) $(FFLAGS) $(OBJECTS) -o $(TARGET) $(LIBS)
 	@echo "✅ Сборка завершена!"
 
-# Правило для .f90 -> .o
 %.o: %.f90
 	$(FC) $(FFLAGS) -c $< -o $@
-	@echo "Компилирую $<"
 
-# Правило для .f -> .o
 %.o: %.f
 	$(FC) $(FFLAGS) -c $< -o $@
-	@echo "Компилирую $<"
 
-# Запуск
+# 3. ЯВНЫЕ ЗАВИСИМОСТИ (Каждая цель встречается СТРОГО один раз)
+parameters.o:
+GAMMA_MOD.o:
+spec_func.o:
+
+ang.o: parameters.o
+coeff_2004.o: parameters.o
+quadpack_generic.o: parameters.o
+others.o: quantum_state.o
+prep_to_1pot.o: parameters.o others.o
+angINT.o: parameters.o ang.o
+dirac_pnt.o: parameters.o ang.o
+quantum_state.o: parameters.o dirac_pnt.o
+Integration_Cuba.o: quantum_state.o parameters.o
+
+# Модули расчетов
+pot0_2004.o: parameters.o quantum_state.o coeff_2004.o angINT.o Integration_Cuba.o others.o
+pot1_2004.o: parameters.o prep_to_1pot.o quantum_state.o others.o Integration_Cuba.o angINT.o
+
+# Главная программа
+main.o: parameters.o quantum_state.o pot0_2004.o pot1_2004.o others.o
+
+# 4. КОМАНДЫ
 run: $(TARGET)
-	./$(TARGET)
+	CUBACORES=1 ./$(TARGET)
 
-# Очистка
 clean:
 	rm -f $(TARGET) *.o *.mod
 	@echo "🧹 Очистка завершена!"
 
-# Полная пересборка
 rebuild: clean all

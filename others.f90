@@ -6,10 +6,11 @@ module others
     
 contains
 
-subroutine print_result(label, res, err, epsabs, scale)
+subroutine print_result(label, unit_no ,res, err, epsabs, scale)
     implicit none
     character(len=*), intent(in) :: label
     real(pr), intent(in) :: res, err, epsabs, scale
+    integer, intent(in) :: unit_no
 
     real(pr) :: eff_eps, actual_err, scaled_res
     integer :: digits, power
@@ -41,7 +42,8 @@ subroutine print_result(label, res, err, epsabs, scale)
     write(fmt, '("(A, F0.", I0, ", A, F0.", I0, ", A)")') digits, digits
 
     ! 4. Вывод
-    write(*, fmt) trim(label)//' : ', scaled_res, ' ± ', actual_err, trim(scale_str)
+    write(unit_no, fmt) trim(label)//' : ', scaled_res, ' ± ', actual_err, trim(scale_str)
+    flush(unit_no)
 
 end subroutine print_result
 !     subroutine print_result(label, res, err, epsabs, scale)
@@ -80,9 +82,10 @@ end subroutine print_result
 
 ! end subroutine print_result
 
-subroutine Symb(state)
+subroutine Symb(state , unit_no)
     implicit none
     type(q_state) , intent(in) :: state
+    integer, intent(in) :: unit_no
 
     integer :: n, l, j2
     character :: shell
@@ -137,8 +140,8 @@ subroutine Symb(state)
     write(term, '(I0,A1,"_",A)') n, shell, trim(j_str)
 
 
-   write(*, '(A)') trim(term)
-   write(*, '("Z = ", I0)') int(Znuc)
+   write(unit_no, '(A)') trim(term)
+   write(unit_no, '("Z = ", I0)') int(Znuc)
    end associate
 
 end subroutine Symb
@@ -189,4 +192,36 @@ end subroutine Symb
         
         call flush(6) 
     end subroutine show_status
+
+    subroutine util_time_print ( Nunit, Nskip_before, Nskip_after )
+!- - - - - - - - -
+      implicit none
+! .. Input / Output ..
+      integer, intent(in) :: Nunit
+      integer, intent(in) :: Nskip_before, Nskip_after
+! .. Local ..
+      character(8)  :: ddate
+      character(10) :: ttime
+      integer :: i
+!- - - - - - - - -
+
+        do i = 1, Nskip_before, 1
+          write(unit=Nunit,fmt=*)
+        enddo  ! i
+
+        call date_and_time(DATE=ddate,TIME=ttime)
+        write(unit=Nunit,fmt='(1x,a20)') '===================='
+        write(unit=Nunit,fmt='(1x,a4,a1,a2,a1,a2,a2,a2,a1,a2,a1,a2)')                   &
+                                     ddate(1:4),'.',ddate(5:6),'.',ddate(7:8),'  ',     &
+                                     ttime(1:2),':',ttime(3:4),':',ttime(5:6)
+        write(unit=Nunit,fmt='(1x,a20)') '===================='
+
+        do i = 1, Nskip_after, 1
+          write(unit=Nunit,fmt=*)
+        enddo  ! i
+
+       return
+
+      end subroutine util_time_print
+
 end module others
