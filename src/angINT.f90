@@ -206,7 +206,7 @@ contains
     case (3)
         Y34 = 4.0_pr / 7
     case (-3)
-        Y34 = -2.0_pr / 5 !??????? знак
+        Y34 = 2.0_pr / 5 !??????? знак
     case default
         write(*,*) 'Error: k_a out of range'
         stop

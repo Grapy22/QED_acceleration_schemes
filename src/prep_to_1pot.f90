@@ -6,9 +6,9 @@ module prep_to_1pot
     
 contains
 
-    subroutine prep (x , y , en , p1 , p2 , ksi , N , a_ , dN)
+    subroutine prep (x , y , en , p1 , p2 , ksi , N , a_ , dN, ddN)
     real(pr) , intent(in) :: p1 , p2 , ksi , x ,y , en
-    real(pr) , intent(out) , optional :: N , a_ , dN
+    real(pr) , intent(out) , optional :: N , a_ , dN, ddN
     real(pr) :: pp_1 , pp_2 , ro1 , ro2 , b2
 
     pp_1 = en * en - p1 * p1
@@ -28,6 +28,8 @@ contains
     endif
 
     if (present(dN)) dN = 2 * en * (x - 1._pr)
+
+    if (present(ddN)) ddN = 2 * (x - 1._pr)
 
     end subroutine prep
 
@@ -82,7 +84,7 @@ contains
 end subroutine prepare_1pot
     
 
-     subroutine P_i_2004 (x , y , en , p1 , p2 , ksi , g1 , f1 , g2, f2, P_1 , P_2, P_3, P_4 , P_5, P_6)
+    subroutine P_i_2004 (x , y , en , p1 , p2 , ksi , g1 , f1 , g2, f2, P_1 , P_2, P_3, P_4 , P_5, P_6)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi , g1 , f1 , g2, f2 , en
     real(pr) , intent(out) :: P_1 , P_2, P_3, P_4 , P_5, P_6
     real(pr) :: A0 , C1 , C2 , D1, D2, Ff1, Ff2, Gg1, Gg2 , H1 , fctr , N
@@ -138,13 +140,13 @@ end subroutine prepare_1pot
 
     end subroutine R_i_2004
 
-    subroutine prepare_red_1pot(x , y , en, p1 , p2 , ksi , g1 , f1 , g2 , f2 , F1r, F2r, dF1r, dF2r, ddF1r, ddF2r)
+    subroutine prepare_red_1pot(x , y , en, p1 , p2 , ksi , g1 , f1 , g2 , f2 , F1r, F2r, dF1r, dF2r, ddF1r, ddF2r, d3F1r, d3F2r)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi , g1 , f1 , g2 , f2 , en
-    real(pr) , intent(out) , optional :: F1r, F2r, dF1r, dF2r, ddF1r, ddF2r
-    real(pr) :: A , a_ , N , B , C, D , H , K6 , K7 ,K8 ,K9  , K10
+    real(pr) , intent(out) , optional :: F1r, F2r, dF1r, dF2r, ddF1r, ddF2r, d3F1r, d3F2r
+    real(pr) :: A , a_ , N , B , C, D , H , K6 , K7 ,K8 ,K9  , K10, dK10, dN, ddN, fctrN
 
     if (present(F1r) .or. present(F2r)) then
-             call prep (x , y , en , p1 , p2 , ksi , N = N , a_ = a_)
+             call prep (x , y , en , p1 , p2 , ksi , N = N , a_ = a_, dN = dN)
              call prepare_1pot(x, y , en , B = B, C = C, D = D, H = H)
              A = a_ + 1.0_pr - N * ( 0.75_pr + x * log(N))
     endif
@@ -159,6 +161,10 @@ end subroutine prepare_1pot
     if (present(ddF1r) .or. present(ddF2r)) K10 = 0.5_pr*(1._pr-x) * (3._pr + 4 * x *(1._pr + log(N) &
      + 2 * en**2 *(x - 1._pr) / N)) + 2 * (1._pr - x)**2
 
+    if (present(d3F1r) .or. present(d3F2r)) then
+        fctrN = 1._pr / N
+        dK10 = 2._pr * x * (1._pr - x) * ( fctrN * dN + 2 * (x - 1._pr) * fctrN * (2 * en - en*en * fctrN * dN) )
+    endif    
     if (present(F1r)) F1r = (A + en * H)* g1 * g2 + en * B * (en * g1 + p1 * f1)*g2 + en * C * g1 * (en * g2 + p2 * f2)  &
     + D*(en * g1 + p1 * f1)*(en * g2 + p2 * f2)
 
@@ -172,6 +178,11 @@ end subroutine prepare_1pot
     if (present(ddF1r)) ddF1r = K10 *  g1 * g2
 
     if (present(ddF2r)) ddF2r = K10 * f1 * f2
+    
+    if (present(d3F1r)) d3F1r = dK10 *  g1 * g2
+
+    if (present(d3F2r)) d3F2r = dK10 * f1 * f2
+
 
     end subroutine prepare_red_1pot
 

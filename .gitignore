@@ -1,6 +1,7 @@
 Объектные файлы (машинный код)
 *.o
 *.obj
+copy
 results_calc
 # Модули Fortran (заголовки)
 *.mod

@@ -1,57 +1,70 @@
 FC = gfortran
-FFLAGS = -Wall -O3 -march=native -funroll-loops -ftree-vectorize -fopenmp -I.
+# Добавлен флаг -J obj/ для сохранения модулей .mod в папке obj
+FFLAGS = -Wall -O3 -march=native -funroll-loops -ftree-vectorize -fopenmp -I. -J obj/
 CUBA_DIR = /home/dmitry/Cuba-4.2.2
 LIBS = -L$(CUBA_DIR) -lcubaq -lm
 
-# 1. СПИСОК ОБЪЕКТОВ (Только один раз, без wildcard)
-OBJECTS = parameters.o ang.o angINT.o coeff_2004.o dirac_pnt.o \
-          GAMMA_MOD.o Integration_Cuba.o others.o pot0_2004.o \
+# Папки для исходников и объектных файлов
+SRC_DIR = src
+OBJ_DIR = obj
+
+# 1. СПИСОК ОБЪЕКТОВ (С указанием пути к папке obj/)
+OBJECTS = $(addprefix $(OBJ_DIR)/, \
+          parameters.o ang.o angINT.o coeff_2004.o dirac_pnt.o \
+          GAMMA_MOD.o Integration_Cuba.o others.o pot0_2004.o pot2_via_pot0.o \
           pot1_2004.o prep_to_1pot.o quadpack_generic.o \
-          quantum_state.o spec_func.o main.o
+          quantum_state.o spec_func.o main.o)
 
 TARGET = main
 
 all: $(TARGET)
 
-# 2. СБОРКА (Добавлен FFLAGS для OpenMP)
+# 2. СБОРКА (Перед компиляцией автоматически создается папка obj/)
 $(TARGET): $(OBJECTS)
 	$(FC) $(FFLAGS) $(OBJECTS) -o $(TARGET) $(LIBS)
 	@echo "✅ Сборка завершена!"
 
-%.o: %.f90
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.f90
+	@mkdir -p $(OBJ_DIR)
 	$(FC) $(FFLAGS) -c $< -o $@
 
-%.o: %.f
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.f
+	@mkdir -p $(OBJ_DIR)
 	$(FC) $(FFLAGS) -c $< -o $@
 
-# 3. ЯВНЫЕ ЗАВИСИМОСТИ (Каждая цель встречается СТРОГО один раз)
-parameters.o:
-GAMMA_MOD.o:
-spec_func.o:
+# 3. ЯВНЫЕ ЗАВИСИМОСТИ (С учетом путей к OBJ_DIR. Исправлена опечатка в pot2_via_pot0)
+$(OBJ_DIR)/parameters.o:
+$(OBJ_DIR)/GAMMA_MOD.o:
+$(OBJ_DIR)/spec_func.o:
 
-ang.o: parameters.o
-coeff_2004.o: parameters.o
-quadpack_generic.o: parameters.o
-others.o: quantum_state.o
-prep_to_1pot.o: parameters.o others.o
-angINT.o: parameters.o ang.o
-dirac_pnt.o: parameters.o ang.o
-quantum_state.o: parameters.o dirac_pnt.o
-Integration_Cuba.o: quantum_state.o parameters.o
+$(OBJ_DIR)/ang.o: $(OBJ_DIR)/parameters.o
+$(OBJ_DIR)/coeff_2004.o: $(OBJ_DIR)/parameters.o
+$(OBJ_DIR)/quadpack_generic.o: $(OBJ_DIR)/parameters.o
+$(OBJ_DIR)/others.o: $(OBJ_DIR)/quantum_state.o
+$(OBJ_DIR)/prep_to_1pot.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/others.o
+$(OBJ_DIR)/angINT.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/ang.o
+$(OBJ_DIR)/dirac_pnt.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/ang.o
+$(OBJ_DIR)/quantum_state.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/dirac_pnt.o
+$(OBJ_DIR)/Integration_Cuba.o: $(OBJ_DIR)/quantum_state.o $(OBJ_DIR)/parameters.o
 
 # Модули расчетов
-pot0_2004.o: parameters.o quantum_state.o coeff_2004.o angINT.o Integration_Cuba.o others.o
-pot1_2004.o: parameters.o prep_to_1pot.o quantum_state.o others.o Integration_Cuba.o angINT.o
+# Модули расчетов
+$(OBJ_DIR)/pot0_2004.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/quantum_state.o $(OBJ_DIR)/coeff_2004.o $(OBJ_DIR)/angINT.o $(OBJ_DIR)/Integration_Cuba.o $(OBJ_DIR)/others.o
+$(OBJ_DIR)/pot1_2004.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/prep_to_1pot.o $(OBJ_DIR)/quantum_state.o $(OBJ_DIR)/others.o $(OBJ_DIR)/Integration_Cuba.o $(OBJ_DIR)/angINT.o
+$(OBJ_DIR)/pot2_via_pot0.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/quantum_state.o $(OBJ_DIR)/coeff_2004.o $(OBJ_DIR)/angINT.o $(OBJ_DIR)/Integration_Cuba.o $(OBJ_DIR)/others.o $(OBJ_DIR)/prep_to_1pot.o
+
 
 # Главная программа
-main.o: parameters.o quantum_state.o pot0_2004.o pot1_2004.o others.o
+$(OBJ_DIR)/main.o: $(OBJ_DIR)/parameters.o $(OBJ_DIR)/quantum_state.o $(OBJ_DIR)/pot0_2004.o $(OBJ_DIR)/pot1_2004.o $(OBJ_DIR)/others.o $(OBJ_DIR)/pot2_via_pot0.o
 
 # 4. КОМАНДЫ
+.PHONY: all run clean rebuild
+
 run: $(TARGET)
 	CUBACORES=1 ./$(TARGET)
 
 clean:
-	rm -f $(TARGET) *.o *.mod
+	rm -rf $(OBJ_DIR) $(TARGET)
 	@echo "🧹 Очистка завершена!"
 
 rebuild: clean all

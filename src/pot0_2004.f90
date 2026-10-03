@@ -34,9 +34,9 @@ contains
     real(pr) :: b1 , b2 , b3 , g , f , X ,  Y , Z , df , dg
 
     associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc )
-    call Dirac_pnt_p ( nr, k, Znuc, p, g, f)
-    call Coeff(p , en , b1 = b1 , b2 = b2 , b3 = b3 )
+    call Dirac_pnt_p ( nr, k, Znuc, p, g , f)
     call dDirac_pnt_p ( nr, k, Znuc, p, dg , df )
+    call Coeff(p , en , b1 = b1 , b2 = b2 , b3 = b3 )
 
     X = b1 * (f * dg * Y26(-k) + g * df * Y26(k))
     Y = g * f * (b1 / p * (Y35(k) + Y35(-k)) + b2 * p * (Y34(k) + Y34(-k)) )
@@ -86,9 +86,9 @@ contains
         fctr3 = - g_D * alpha / (pi ** 4 * 32)
         end associate
         epsrel = 1e-13_pr
-        epsabs1_phys = 1e-15_pr
-        epsabs2_phys = 1e-15_pr
-        epsabs3_phys = 1e-15_pr
+        epsabs1_phys = 1e-14_pr
+        epsabs2_phys = 1e-14_pr
+        epsabs3_phys = 1e-14_pr
 
         epsabs1 = epsabs1_phys / fctr1
         epsabs2 = epsabs2_phys / fctr2
@@ -213,9 +213,9 @@ contains
         fctr3 = - g_D * alpha / (pi ** 4 * 32) * alphaZ
         end associate
         epsrel = 1e-13_pr
-        epsabs1_phys = 1e-15_pr
-        epsabs2_phys = 1e-15_pr
-        epsabs3_phys = 1e-15_pr
+        epsabs1_phys = 1e-14_pr
+        epsabs2_phys = 1e-14_pr
+        epsabs3_phys = 1e-14_pr
 
         epsabs1 = epsabs1_phys / fctr1
         epsabs2 = epsabs2_phys / fctr2

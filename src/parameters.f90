@@ -16,8 +16,8 @@
 !      real(pr), parameter :: acl = 137.035999679_pr                       ! CODATA 2006:   137.035 999 679(94)
 !      real(pr), parameter :: acl = 137.035999074_pr                       ! CODATA 2010:   137.035 999 074(44)
 !      real(pr), parameter :: acl = 137.035999139_pr                       ! CODATA 2014:   137.035 999 139(31)
-      real(pr), parameter :: acl = 137.035999084_pr                       ! CODATA 2018:   137.035 999 084(21)
-!      real(pr), parameter :: acl = 137.036_pr
+!      real(pr), parameter :: acl = 137.035999084_pr                       ! CODATA 2018:   137.035 999 084(21)
+      real(pr), parameter :: acl = 137.036_pr
       real(pr) , parameter :: alpha = 1._pr / acl
 !   Bohr radius for electron:  a_0 = hbar / (alpha*m_e*c)
 !      real(pr), parameter :: au_fm = 52917.720859_pr                      ! CODATA 2006:   52 917.720 859(36)

@@ -6,7 +6,7 @@ module pot1_2004
     use Integration_Cuba
     use angINT
     implicit none
-    
+
 contains
 
 real(pr) function ver1_pot1 (x , y , p1 , p2 , ksi , state)
@@ -28,7 +28,7 @@ real(pr) function ver1_pot1 (x , y , p1 , p2 , ksi , state)
     ver1_pot1 = res * Vq
     end associate
     end function ver1_pot1
-    
+
 
 real(pr) function ver2_pot1 (x , y , p1 , p2 , ksi , state)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi
@@ -56,7 +56,7 @@ real(pr) function red_pot1 (x , y , p1 , p2 , ksi , state)
     type(q_state) , intent(in) :: state
     real(pr) :: q2 , Vq , g1 , f1 , g2 , f2 , F1r, F2r, dF1r, dF2r , N , dN
 
-    associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc , & 
+    associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc , &
         alphaZ => state%alphaZ , l => state%l , l_ => state%l_)
     q2 = p1 * p1 + p2 * p2 - 2 * p1 * p2 * ksi
     Vq = -4 * pi * alphaZ / q2
@@ -69,6 +69,7 @@ real(pr) function red_pot1 (x , y , p1 , p2 , ksi , state)
 
     red_pot1 = Vq * (P_l(l , ksi) * (dF1r - F1r * dN / N) + P_l(l_, ksi) * (dF2r - F2r * dN / N)) / N
 
+
     end associate
     end function red_pot1
 
@@ -76,12 +77,12 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
     type(q_state) , intent(in) :: state
     integer, intent(in) :: unit_no
     character(len=*), intent(in), optional :: vr , red , vert
-    real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2 
+    real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2
     real(pr) :: res3 , err3 , epsabs3 , fctr3 , g_D , total_res , total_err
     real(pr) ::  epsabs1_phys , epsabs2_phys ,epsabs3_phys
-    logical :: flag_vert , flag_red , flag_vr 
+    logical :: flag_vert , flag_red , flag_vr
 
-    
+
 
     flag_vert = present(vert) .and. vert == "vert"
     flag_red = present(red) .and. red == "red"
@@ -96,10 +97,10 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
     fctr2 = 4 * alpha / (2 * pi) ** 7
     fctr3 = g_D * alpha /  (2 * pi)**6
     end associate
-    epsrel = 1e-7_pr
-    epsabs1_phys = 1e-9_pr
-    epsabs2_phys = 1e-9_pr
-    epsabs3_phys = 1e-9_pr
+    epsrel = 1e-12_pr
+    epsabs1_phys = 1e-14_pr
+    epsabs2_phys = 1e-14_pr
+    epsabs3_phys = 1e-14_pr
 
     epsabs1 = epsabs1_phys / fctr1
     epsabs2 = epsabs2_phys / fctr2
@@ -107,9 +108,9 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
 
 
     if (flag_vert) then
-        
+
         call Cuba_Int5_Cuhre(ver1_pot1, state, res1, err1, epsrel, epsabs1)
-        
+
         call Cuba_Int5_Cuhre(ver2_pot1, state, res2, err2, epsrel, epsabs2)
 
         res1 = res1 * fctr1
@@ -120,21 +121,21 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
 
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
-        
+
 
         call print_result("pot1_vertex", unit_no , total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
     if (flag_red) then
-        
+
         call Cuba_Int5_Cuhre(red_pot1 , state, res3, err3, epsrel, epsabs3)
 
         res3 = res3 * fctr3
         err3 = err3 * fctr3
 
         call print_result("pot1_red", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
-        
+
     endif
 
     if (flag_vert .and. flag_red .and. flag_vr) then
@@ -143,12 +144,12 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
         total_err = sqrt(total_err**2 + err3**2)
 
         call print_result("pot1_vr", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
-         
-    endif     
-    
+
+    endif
+
 
     end subroutine pot1
-    
+
 real(pr) function ver1_pot1_SC (x , y , p1 , p2 , ksi, state)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi
     type(q_state) , intent(in) :: state
@@ -166,11 +167,11 @@ real(pr) function ver1_pot1_SC (x , y , p1 , p2 , ksi, state)
 
     ver1_pot1_SC = res * Vq
     end associate
-    end function ver1_pot1_SC    
+    end function ver1_pot1_SC
 
 real(pr) function ver2_pot1_SC (x , y , p1 , p2 , ksi, state)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi
-    type(q_state) , intent(in) :: state 
+    type(q_state) , intent(in) :: state
     real(pr) :: res , gradV_q , q2 , g1 , f1 , g2, f2 , dR_1 , dR_2 , dR_3 , dR_4 , dR_5 , dR_6
     associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc , alphaZ => state%alphaZ)
     call Dirac_pnt_p ( nr, k, Znuc, p1, g1, f1 , -0.5_pr)
@@ -190,7 +191,7 @@ real(pr) function ver2_pot1_SC (x , y , p1 , p2 , ksi, state)
 real(pr) function red_pot1_SC(x , y , p1 , p2 , ksi , state)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi
     type(q_state) , intent(in) :: state
-    real(pr) :: N , dN , F1r, F2r , dF1r , dF2r , g1 , f1 , g2 , f2 , q2 , Vq , ddF1r , ddF2r
+    real(pr) :: N , dN , F1r, F2r , dF1r , dF2r , X1 , Y1 , g2 , f2 , q2 , Vq , ddF1r , ddF2r
     real(pr) :: fctrN , fctr , term1 , term2
     associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc , &
          alphaZ => state%alphaZ , l => state%l , l_ => state%l_)
@@ -198,10 +199,10 @@ real(pr) function red_pot1_SC(x , y , p1 , p2 , ksi , state)
     q2 = p1*p1 + p2*p2 - 2 * p1 * p2 * ksi
     Vq = -4 * pi * alphaZ / q2
 
-    call Dirac_pnt_p ( nr, k, Znuc, p1, g1, f1 , -0.5_pr)
-    call Dirac_pnt_p ( nr, k, Znuc, p2, g2, f2 , -0.5_pr)
+    call dirac_pnt_XY ( nr, k, Znuc, p1, X1, Y1 , -0.0_pr)
+    call Dirac_pnt_p ( nr, k, Znuc, p2, g2, f2 , -1.0_pr)
     call prep (x , y, en ,p1 , p2 , ksi , N = N , dN = dN)
-    call prepare_red_1pot(x , y , en, p1 , p2 , ksi , g1 , f1 , g2 , f2 , F1r = F1r, &
+    call prepare_red_1pot(x , y , en, p1 , p2 , ksi , X1 , Y1 , g2 , f2 , F1r = F1r, &
     F2r = F2r, dF1r = dF1r, dF2r = dF2r , ddF1r = ddF1r , ddF2r = ddF2r)
 
     fctrN = 1._pr / N
@@ -221,10 +222,10 @@ subroutine pot1_SC(state , unit_no ,vr , vert , red)
 type(q_state) , intent(in) :: state
     integer, intent(in) :: unit_no
     character(len=*), intent(in), optional :: vr , red , vert
-    real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2 
+    real(pr) :: res1 , err1 , fctr1 , epsrel , epsabs1 , epsabs2, res2 , err2 , fctr2
     real(pr) :: res3 , err3 , epsabs3 , fctr3 , g_D , total_res , total_err
     real(pr) ::  epsabs1_phys , epsabs2_phys ,epsabs3_phys
-    logical :: flag_vert , flag_red , flag_vr 
+    logical :: flag_vert , flag_red , flag_vr
 
     flag_vert = present(vert) .and. vert == "vert"
     flag_red = present(red) .and. red == "red"
@@ -237,10 +238,10 @@ type(q_state) , intent(in) :: state
     fctr2 = 4 * alpha / (2 * pi) ** 7 * alphaZ / 2
     fctr3 = g_D * alpha /  (2 * pi)**6 * alphaZ / 2
     end associate
-    epsrel = 1e-7_pr
-    epsabs1_phys = 1e-9_pr
-    epsabs2_phys = 1e-9_pr
-    epsabs3_phys = 1e-9_pr
+    epsrel = 1e-9_pr
+    epsabs1_phys = 1e-10_pr
+    epsabs2_phys = 1e-10_pr
+    epsabs3_phys = 1e-10_pr
 
     epsabs1 = epsabs1_phys / fctr1
     epsabs2 = epsabs2_phys / fctr2
@@ -248,9 +249,9 @@ type(q_state) , intent(in) :: state
 
 
     if (flag_vert) then
-        
+
         call Cuba_Int5_Cuhre(ver1_pot1_SC, state, res1, err1, epsrel, epsabs1)
-        
+
         call Cuba_Int5_Cuhre(ver2_pot1_SC, state, res2, err2, epsrel, epsabs2)
 
         res1 = res1 * fctr1
@@ -261,21 +262,21 @@ type(q_state) , intent(in) :: state
 
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
-        
+
 
         call print_result("pot1_vertex_SC", unit_no , total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
     if (flag_red) then
-        
+
         call Cuba_Int5_Cuhre(red_pot1_SC , state, res3, err3, epsrel, epsabs3)
 
         res3 = res3 * fctr3
         err3 = err3 * fctr3
 
         call print_result("pot1_red_SC", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
-        
+
     endif
 
     if (flag_vert .and. flag_red .and. flag_vr) then
@@ -284,9 +285,9 @@ type(q_state) , intent(in) :: state
         total_err = sqrt(total_err**2 + err3**2)
 
         call print_result("pot1_vr_SC", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
-         
-    endif     
-    
+
+    endif
+
 
 end subroutine pot1_Sc
 

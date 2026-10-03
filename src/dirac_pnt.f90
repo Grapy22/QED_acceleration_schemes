@@ -2,7 +2,7 @@
 !
       module dirac_pnt
 !- - - - - - - - - -
-      use parameters     
+      use parameters
       use ang
 
       implicit none
@@ -60,15 +60,14 @@
 !============================================================================
 !
       subroutine dDirac_pnt_p ( nrx, kax, Zx, p, dG, dF, beta_o )
-!- - - - - - - - -
+
       implicit none
-! .. Input / Output ..
       integer, intent(in) :: nrx, kax
       real(pr), intent(in) :: Zx
       real(pr), intent(in) :: p
       real(pr), intent(out) :: dG, dF
       real(pr), intent(in), optional :: beta_o
-! .. Local ..
+
       real(pr) :: alphaZ, lmbd, a, eps, Norm
       real(pr) :: C1(0:NNmax), C2(0:NNmax)
       real(pr) :: D(-LLmax:NNmax,0:LLmax)
@@ -79,9 +78,9 @@
       real(pr) :: G, F
       integer :: m
       real(pr) :: beta
-!- - - - - - - - -
 
         call Dirac_pnt_p ( nrx, kax, Zx, p, G, F, beta_o=beta_o )
+
 
         call Dirac_pnt_param_prepare ( nrx, kax, Zx, alphaZ, lmbd, a, eps, Norm, l_p, l_m )
         lmax = max( l_p, l_m ) + 1
@@ -117,28 +116,70 @@
 !
 !============================================================================
 !
-      subroutine V_Dirac_pnt_p ( nrx, kax, Zx, p, VG, VF )
+subroutine dirac_pnt_XY (nrx, kax, Zx, p, X, Y, beta_o)
 !- - - - - - - - -
       implicit none
 ! .. Input / Output ..
       integer, intent(in) :: nrx, kax
       real(pr), intent(in) :: Zx
       real(pr), intent(in) :: p
-      real(pr), intent(out) :: VG, VF
+      real(pr), intent(out) :: X, Y
+      real(pr), intent(in), optional :: beta_o
+
 ! .. Local ..
-      real(pr) :: alphaZ
-!- - - - - - - - -
+      real(pr) :: alphaZ, lmbd, a, eps, Norm
+      real(pr) :: C1(0:NNmax), C2(0:NNmax)
+      real(pr) :: D(-LLmax:NNmax,0:LLmax), D_r(-LLmax:NNmax,0:LLmax)
+      integer :: l_p, l_m, lmax
+      real(pr) :: term_fX, term_fY, term_gX, term_gY, fctrX1, fctrX2, fctrY1, fctrY2, factor1, factor2, beta
+      integer :: m
 
-        alphaZ = Zx / acl
+! --- параметры ---
+    call Dirac_pnt_param_prepare ( nrx, kax, Zx, alphaZ, lmbd, a, eps, Norm, l_p, l_m )
+    lmax = max( l_p, l_m )
 
-        call Dirac_pnt_p ( nrx, kax, Zx, p, VG, VF, beta_o=-1._pr )
+    call C1C2_calc ( nrx, kax, alphaZ, lmbd, a, C1, C2 )
 
-        call wf_real_fctr_multiply ( VG, VF, -alphaZ )
+    call Dml_calc ( lmax, nrx, D(-lmax:,:), p, lmbd, a, beta_o=beta_o )
+    if (present(beta_o)) then
+        beta= beta_o + 1.0_pr
+        call Dml_calc ( lmax, nrx, D_r(-lmax:,:), p, lmbd, a, beta_o=beta )
+    else
+        call Dml_calc ( lmax, nrx, D_r(-lmax:,:), p, lmbd, a , 1.0_pr)
+    end if
 
-       return
+    term_fX = 0.0_pr
+    term_gX = 0.0_pr
+    term_fY = 0.0_pr
+    term_gY = 0.0_pr
 
-      end subroutine V_Dirac_pnt_p
-!
+    fctrX1 = (real(2*kax, pr) - 1.0_pr + 2 * kax * eps) / 2
+    fctrX2 = (1.0_pr - real(2 * kax, pr) ) / 2 * kax
+    fctrY1 = (real(2*kax, pr) + 1.0_pr - 2 * kax * eps) / 2
+    fctrY2 = (1.0_pr + real(2 * kax, pr) ) / 2 * kax
+
+    do m = 0, nrx, 1
+        term_fX = term_fX + ( C1(m) - C2(m) ) * (fctrX1 * D_r(m, l_p) + alphaZ * kax * D(m, l_p))
+        term_gX = term_gX + ( C1(m) + C2(m) ) * D(m, l_p) * fctrX2
+        term_gY = term_gY + ( C1(m) + C2(m) ) * ( fctrY1 * D_r(m, l_m) - alphaZ * kax * D(m, l_m))
+        term_fY = term_fY + ( C1(m) - C2(m) ) * D(m, l_m) * fctrY2
+    enddo
+
+    factor1 = Norm * sqrt( 1._pr + eps ) * p
+    factor2 = Norm * sqrt( 1._pr - eps ) * p
+
+    term_fX = term_fX * factor2;
+    term_gX = term_gX * factor1;
+    term_gY = term_gY * factor1 ;
+    term_fY = term_fY * factor2 ;
+
+    X = term_fX + term_gX;
+    Y = term_fY + term_gY; ! сделать умножение на b_0
+    if (kax > 0) Y = -Y
+      return
+end subroutine dirac_pnt_XY
+
+
 !============================================================================
 !
       subroutine wf_real_fctr_multiply ( G, F, fctr )
