@@ -7,6 +7,7 @@ program main
     use others
     use dirac_pnt
     use pot2_via_pot0
+    use SE_e
     implicit none
 
     integer :: u1, u2, u3, u4
@@ -21,17 +22,42 @@ program main
     open(newunit=u4, file="results_calc/output_state4.txt", status="replace", action="write")
 
     call init_state(state1, -1, 0, 10._pr)
-    call init_state(state2, -2, 0, 10._pr)
-    call init_state(state3, -2, 0, 10._pr)
-    call init_state(state4, -3, 0, 10._pr)
     
-    call pot0 (state1 , u1, vr = "vr" , vert = "vert" , red = "red")
-    call pot0_SC (state1 , u1, vr = "vr" , vert = "vert" , red = "red")
-    call pot1 (state1 , u1, vr = "vr" , vert = "vert" , red = "red")
-    call pot1_SC (state1 , u1, vr = "vr" , vert = "vert" , red = "red")
-    call pot2_via_0pot(state1 , u1, vr = "vr" , vert = "vert" , red = "red")
-    call pot2_via_1pot(state1 , u1, vr = "vr" , vert = "vert" , red = "red")
+
+    call init_state(state2, -1, 1, 10._pr)
+    call init_state(state3, 1, 1, 10._pr)
+    call init_state(state4, -2, 0, 10._pr)
+
+    call SE_contrib(state1, u1, contrib="1pot")
+    call SE_contrib(state2, u2, contrib="1pot")
+    call SE_contrib(state3, u3, contrib="1pot")
+    call SE_contrib(state4, u4, contrib="1pot")
+
+    ! call SE_contrib(state1, u1, contrib="2pot_via_1pot")
+    ! call SE_contrib(state2, u2, contrib="2pot_via_1pot")
+    ! call SE_contrib(state3, u3, contrib="2pot_via_1pot")
+    ! call SE_contrib(state4, u4, contrib="2pot_via_1pot")
+
+
     
+! сделать человеское распаралеливание 
+   ! call pot1_SC(state1 , u2, red = "red")
+    !call pot2_via_1pot(state1, u1, vert = "vert")
+   ! call pot1_SC(state1 , u1, red = "red") 
+    !call pot1_SC(state2 , u2, vr = "vr" , vert = "vert" , red = "red")
+    !call pot1_SC(state3 , u3, vr = "vr" , vert = "vert" , red = "red")
+    !call pot2_via_0pot(state4 , u4, vr = "vr" , vert = "vert" , red = "red")
+    !call pot0(state4 , u4, vr = "vr" , vert = "vert" , red = "red")
+
+    !call pot0_SC (state2 , u2 , vr = "vr" , vert = "vert" , red = "red")
+    ! call pot1(state1 , vr = "vr" , vert = "vert" , red = "red")
+    !call pot1_sc (state1 , vr = "vr" , vert = "vert" , red = "red")
+    !call pot0_SC (state2 , vr = "vr" , vert = "vert" , red = "red")
+   ! call pot1(state1 , u1, vr = "vr" , vert = "vert" , red = "red")
+    !call pot1(state2 , u2, red = "red")
+   ! call pot1(state3 , u3, vr = "vr" , vert = "vert" , red = "red")
+   ! call pot1(state4 , u4, vr = "vr" , vert = "vert" , red = "red")
+
 !    !$omp parallel
 !        !$omp sections
 !             !$omp section

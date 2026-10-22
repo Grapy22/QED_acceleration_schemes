@@ -123,7 +123,7 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
         total_err = sqrt(err1**2 + err2**2)
 
 
-        call print_result("pot1_vertex", unit_no , total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot1_vertex", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -134,7 +134,7 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
         res3 = res3 * fctr3
         err3 = err3 * fctr3
 
-        call print_result("pot1_red", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot1_red", unit_no , state, res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -143,7 +143,7 @@ subroutine pot1 (state , unit_no ,vr , vert , red)
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot1_vr", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot1_vr", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -191,7 +191,7 @@ real(pr) function ver2_pot1_SC (x , y , p1 , p2 , ksi, state)
 real(pr) function red_pot1_SC(x , y , p1 , p2 , ksi , state)
     real(pr) , intent(in) :: x , y , p1 , p2 , ksi
     type(q_state) , intent(in) :: state
-    real(pr) :: N , dN , F1r, F2r , dF1r , dF2r , X1 , Y1 , g2 , f2 , q2 , Vq , ddF1r , ddF2r
+    real(pr) :: N , dN , F1r, F2r , dF1r , dF2r , g1 , f1 , g2 , f2 , q2 , Vq , ddF1r , ddF2r
     real(pr) :: fctrN , fctr , term1 , term2
     associate( nr => state%nr, k => state%k, en => state%en, Znuc => state%Znuc , &
          alphaZ => state%alphaZ , l => state%l , l_ => state%l_)
@@ -199,10 +199,10 @@ real(pr) function red_pot1_SC(x , y , p1 , p2 , ksi , state)
     q2 = p1*p1 + p2*p2 - 2 * p1 * p2 * ksi
     Vq = -4 * pi * alphaZ / q2
 
-    call dirac_pnt_XY ( nr, k, Znuc, p1, X1, Y1 , -0.0_pr)
-    call Dirac_pnt_p ( nr, k, Znuc, p2, g2, f2 , -1.0_pr)
+    call dirac_pnt_p ( nr, k, Znuc, p1, g1, f1 , -1.0_pr)
+    call Dirac_pnt_p ( nr, k, Znuc, p2, g2, f2 , -0.0_pr)
     call prep (x , y, en ,p1 , p2 , ksi , N = N , dN = dN)
-    call prepare_red_1pot(x , y , en, p1 , p2 , ksi , X1 , Y1 , g2 , f2 , F1r = F1r, &
+    call prepare_red_1pot(x , y , en, p1 , p2 , ksi , g1 , f1 , g2 , f2 , F1r = F1r, &
     F2r = F2r, dF1r = dF1r, dF2r = dF2r , ddF1r = ddF1r , ddF2r = ddF2r)
 
     fctrN = 1._pr / N
@@ -238,10 +238,10 @@ type(q_state) , intent(in) :: state
     fctr2 = 4 * alpha / (2 * pi) ** 7 * alphaZ / 2
     fctr3 = g_D * alpha /  (2 * pi)**6 * alphaZ / 2
     end associate
-    epsrel = 1e-9_pr
-    epsabs1_phys = 1e-10_pr
-    epsabs2_phys = 1e-10_pr
-    epsabs3_phys = 1e-10_pr
+    epsrel = 1e-8_pr
+    epsabs1_phys = 1e-9_pr
+    epsabs2_phys = 1e-9_pr
+    epsabs3_phys = 1e-9_pr
 
     epsabs1 = epsabs1_phys / fctr1
     epsabs2 = epsabs2_phys / fctr2
@@ -264,7 +264,7 @@ type(q_state) , intent(in) :: state
         total_err = sqrt(err1**2 + err2**2)
 
 
-        call print_result("pot1_vertex_SC", unit_no , total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot1_vertex_SC", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -275,7 +275,7 @@ type(q_state) , intent(in) :: state
         res3 = res3 * fctr3
         err3 = err3 * fctr3
 
-        call print_result("pot1_red_SC", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot1_red_SC", unit_no , state, res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -284,7 +284,7 @@ type(q_state) , intent(in) :: state
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot1_vr_SC", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot1_vr_SC", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
