@@ -55,8 +55,8 @@ contains
     call Dirac_pnt_p ( nr, k, Znuc, p, g, f)
     call Coeff(p , en , a1 = a1 , a2 = a2 , a3 = a3 )
 
-    term1 = a1 * (en * (g*g + f*f) + 2 * p * g * f)
-    term2 = a2 * (g*g + f*f)
+    term1 = a1 * (en * (g*g + f*f) +  2 * p * g * f)
+    term2 = a2 * (g*g + f*g)
     term3 = a3 * (g*g - f*f)
 
     red_0pot = term1 + term2 + term3
@@ -109,7 +109,7 @@ contains
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
         
-        call print_result("pot0_vertex", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vertex", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -121,7 +121,7 @@ contains
         err3 = err3 * fctr3
 
 
-        call print_result("pot0_red", unit_no ,res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot0_red", unit_no , state, res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -130,7 +130,7 @@ contains
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot0_vr", unit_no, total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vr", unit_no, state, total_res, total_err, epsabs1_phys, 1e6_pr)
          
     endif     
     !write(*,*) repeat("-" , 78)
@@ -235,7 +235,7 @@ contains
         total_res = res1 + res2
         total_err = sqrt(err1**2 + err2**2)
         
-        call print_result("pot0_vertex_SC", unit_no,total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vertex_SC", unit_no, state, total_res, total_err, epsabs1_phys, 1e6_pr)
 
     endif
 
@@ -247,7 +247,7 @@ contains
         err3 = err3 * fctr3
 
 
-        call print_result("pot0_red_SC", unit_no,res3, err3, epsabs3_phys, 1e6_pr)
+        call print_result("pot0_red_SC", unit_no, state, res3, err3, epsabs3_phys, 1e6_pr)
 
     endif
 
@@ -256,7 +256,7 @@ contains
         total_res = total_res + res3
         total_err = sqrt(total_err**2 + err3**2)
 
-        call print_result("pot0_vr_SC", unit_no ,total_res, total_err, epsabs1_phys, 1e6_pr)
+        call print_result("pot0_vr_SC", unit_no , state, total_res, total_err, epsabs1_phys, 1e6_pr)
          
     endif     
    ! write(*,*) repeat("-" , 78)
